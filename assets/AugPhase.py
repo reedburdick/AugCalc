@@ -1,5 +1,5 @@
-import Resources.APIHandler as APIHandler
-from Resources.AugPlayer import Player, VALID_SPECS
+import assets.APIHandler as APIHandler
+from assets.AugPlayer import Player, VALID_SPECS
 
 
 QUERY_TIMES="""

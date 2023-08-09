@@ -1,10 +1,13 @@
-import Resources.APIHandler as APIHandler
+import assets.APIHandler as APIHandler
 import heapq
-import Resources.AugFightID as AugFightID
-import Resources.AugEncID as AugEncID
-import Resources.AugPhase as AugPhase
-import Resources.AugPhasePlusEncID as AugPhasePlusEncID
-import Resources.AugDebug as AugDebug
+import assets.AugFightID as AugFightID
+import assets.AugEncID as AugEncID
+import assets.AugPhase as AugPhase
+import assets.AugPhasePlusEncID as AugPhasePlusEncID
+import assets.AugDebug as AugDebug
+
+
+VALID_FIGHT_SELECTION_OPTIONS = {"1", "2", "3", "4"}
 
 
 def compile_top_two(fight_dict):
@@ -70,58 +73,98 @@ def get_seconds_from_segments(segment):
 
 
 def main():
-    code = input("Please enter the code for the report, found in the URL: ")
-    fight_selection_option = input("Choose how pulls will be selected, 1 for fight ID, 2 for encounter ID, 3 for phase, or 4 for both phase and encounter ID: ")
+    while True:
+        code = input("Please enter the code for the report, found in the URL: ")
+        real_code_resp = APIHandler.check_code_valid(APIHandler.QUERY_VALID_CODE, code=code)
+        try:
+            real_code = real_code_resp['data']['reportData']['report']['code']
+        except TypeError:
+            print("Invalid code, try again.")
+            continue
+        break
+    while True:
+        fight_selection_option = input("Choose how pulls will be selected, 1 for fight ID, 2 for encounter ID, 3 for phase, or 4 for both phase and encounter ID: ")
+        if fight_selection_option in VALID_FIGHT_SELECTION_OPTIONS:
+            break
     if fight_selection_option == "1":
-        fightID_inp = input("Please enter the fight IDs found in the URL of the report, separated by a space: ")
-        fightIDs_str = fightID_inp.split()
-        fightIDs = [int(num) for num in fightIDs_str]
-        fight_resp = APIHandler.get_fight_times(AugFightID.QUERY_TIMES, code=code, fightIDs=fightIDs)
-        fight_list = fight_resp['data']['reportData']['report']['fights']
-        fight_dict, fight_list = AugFightID.create_fight_dict(fight_list, code)
+        while True:
+            fightID_inp = input("Please enter the fight IDs found in the URL of the report, separated by a space: ")
+            fightIDs_str = fightID_inp.split()
+            fightIDs = {int(num) for num in fightIDs_str}
+            fight_resp = APIHandler.get_fight_times(AugFightID.QUERY_TIMES, code=code)
+            fight_list = fight_resp['data']['reportData']['report']['fights']
+            valid_id_set = {fight['id'] for fight in fight_list}
+            if all(item in valid_id_set for item in fightIDs):
+                break
+            else:
+                print("One or more fight IDs are invalid.")
+                continue
+        fight_dict, fight_list = AugFightID.create_fight_dict(fight_list, fightIDs, code)
     elif fight_selection_option == "2":
-        print("Possible encounter IDs: \n\
-Kazzara - 2688\n\
-Amalgamation Chamber - 2687\n\
-Forgotten Experiments - 2693\n\
-Assault of the Zaqali - 2682\n\
-Rashok - 2680\n\
-Zskarn - 2689\n\
-Magmorax - 2683\n\
-Neltharion - 2684\n\
-Sarkareth - 2685")
-        encID_inp = input("Please enter the encounter ID(s) for a pull to be considered, separated by a space: ")
-        encID_set_str = set(encID_inp.split())
-        encID_set = {int(ID) for ID in encID_set_str}
-        fight_resp = APIHandler.get_fight_times(AugEncID.QUERY_TIMES, code=code)
-        fight_list = fight_resp['data']['reportData']['report']['fights']
+        while True:
+            print("Possible encounter IDs: \n\
+    Kazzara - 2688\n\
+    Amalgamation Chamber - 2687\n\
+    Forgotten Experiments - 2693\n\
+    Assault of the Zaqali - 2682\n\
+    Rashok - 2680\n\
+    Zskarn - 2689\n\
+    Magmorax - 2683\n\
+    Neltharion - 2684\n\
+    Sarkareth - 2685")
+            encID_inp = input("Please enter the encounter ID(s) for a pull to be considered, separated by a space: ")
+            encID_set_str = set(encID_inp.split())
+            encID_set = {int(ID) for ID in encID_set_str}
+            fight_resp = APIHandler.get_fight_times(AugEncID.QUERY_TIMES, code=code)
+            fight_list = fight_resp['data']['reportData']['report']['fights']
+            valid_enc_id_set = {fight['encounterID'] for fight in fight_list}
+            if all(item in valid_enc_id_set for item in encID_set):
+                break
+            else:
+                print("One or more encounter IDs are invalid.")
+                continue
         fight_dict, fight_list = AugEncID.create_fight_dict(fight_list, encID_set, code)
     elif fight_selection_option == "3":
-        phase_inp = input("Please enter the phase to be reached for a wipe to be considered. If there are multiple, separate them by a space: ")
-        phase_set_str = set(phase_inp.split())
-        phase_set = {int(phase) for phase in phase_set_str}
-        fight_resp = APIHandler.get_fight_times(AugPhase.QUERY_TIMES, code=code)
-        fight_list = fight_resp['data']['reportData']['report']['fights']
+        while True:
+            phase_inp = input("Please enter the phase to be reached for a wipe to be considered. If there are multiple, separate them by a space: ")
+            phase_set_str = set(phase_inp.split())
+            phase_set = {int(phase) for phase in phase_set_str}
+            fight_resp = APIHandler.get_fight_times(AugPhase.QUERY_TIMES, code=code)
+            fight_list = fight_resp['data']['reportData']['report']['fights']
+            valid_phase_set = {fight['lastPhase'] for fight in fight_list}
+            if all(item in valid_phase_set for item in phase_set):
+                break
+            else:
+                print("One or more phases are invalid.")
+                continue
         fight_dict, fight_list = AugPhase.create_fight_dict(fight_list, phase_set, code)
     elif fight_selection_option == "4":
-        print("Possible encounter IDs: \n\
-Kazzara - 2688\n\
-Amalgamation Chamber - 2687\n\
-Forgotten Experiments - 2693\n\
-Assault of the Zaqali - 2682\n\
-Rashok - 2680\n\
-Zskarn - 2689\n\
-Magmorax - 2683\n\
-Neltharion - 2684\n\
-Sarkareth - 2685")
-        encID_inp = input("Please enter the encounter ID(s) for a pull to be considered, separated by a space: ")
-        encID_set_str = set(encID_inp.split())
-        encID_set = {int(ID) for ID in encID_set_str}
-        phase_inp = input("Please enter the phase to be reached for a wipe to be considered. If there are multiple, separate them by a space: ")
-        phase_set_str = set(phase_inp.split())
-        phase_set = {int(phase) for phase in phase_set_str}
-        fight_resp = APIHandler.get_fight_times(AugPhasePlusEncID.QUERY_TIMES, code=code)
-        fight_list = fight_resp['data']['reportData']['report']['fights']
+        while True:
+            print("Possible encounter IDs: \n\
+    Kazzara - 2688\n\
+    Amalgamation Chamber - 2687\n\
+    Forgotten Experiments - 2693\n\
+    Assault of the Zaqali - 2682\n\
+    Rashok - 2680\n\
+    Zskarn - 2689\n\
+    Magmorax - 2683\n\
+    Neltharion - 2684\n\
+    Sarkareth - 2685")
+            encID_inp = input("Please enter the encounter ID(s) for a pull to be considered, separated by a space: ")
+            encID_set_str = set(encID_inp.split())
+            encID_set = {int(ID) for ID in encID_set_str}
+            phase_inp = input("Please enter the phase to be reached for a wipe to be considered. If there are multiple, separate them by a space: ")
+            phase_set_str = set(phase_inp.split())
+            phase_set = {int(phase) for phase in phase_set_str}
+            fight_resp = APIHandler.get_fight_times(AugPhasePlusEncID.QUERY_TIMES, code=code)
+            fight_list = fight_resp['data']['reportData']['report']['fights']
+            valid_enc_id_set = {fight['encounterID'] for fight in fight_list}
+            valid_phase_set = {fight['lastPhase'] for fight in fight_list}
+            if all(item in valid_enc_id_set for item in encID_set) and all(item in valid_phase_set for item in phase_set):
+                break
+            else:
+                print("One or more selections are invalid.")
+                continue
         fight_dict, fight_list = AugPhasePlusEncID.create_fight_dict(fight_list, phase_set, encID_set, code)
     top_two_dict, intervals_reached = compile_top_two(fight_dict)
     best_buffs = compile_best_buff_list(top_two_dict)
