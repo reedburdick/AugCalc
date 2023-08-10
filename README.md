@@ -2,7 +2,7 @@
 Calculates who the top 2 dps are in 30s intervals of a warcraftlogs report
 
 ## Setting Up the Program
-
+1. Navigate to the **Releases** section and download the latest executable.
 1. Go to this link: [https://www.warcraftlogs.com/api/clients/](https://www.warcraftlogs.com/api/clients/), and create a new client.
 2. Name it whatever you want, but ensure it's somewhat descriptive.
 3. Set the redirect URL to: `http://localhost:8080/callback`.
@@ -17,7 +17,7 @@ Calculates who the top 2 dps are in 30s intervals of a warcraftlogs report
    - Variable name: `AUG_CLIENT_SECRET`
    - Variable value: Client Secret from the text file.
 10. **Be sure to save the variables somewhere before proceeding.** Restart your PC.
-11. Run `AugCalc.py` using your favorite IDE.
+11. Run `AugCalc.exe`.
 
 ## Instructions for Use
 
