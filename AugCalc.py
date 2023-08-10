@@ -75,7 +75,9 @@ def get_seconds_from_segments(segment):
 def main():
     while True:
         while True:
-            code = input("Please enter the code for the report, found in the URL: ")
+            code = input("Please enter the code for the report, found in the URL (or exit to close the program): ")
+            if code == 'exit':
+                exit()
             real_code_resp = APIHandler.check_code_valid(APIHandler.QUERY_VALID_CODE, code=code)
             try:
                 real_code = real_code_resp['data']['reportData']['report']['code']
@@ -171,11 +173,4 @@ def main():
         best_buffs = compile_best_buff_list(top_two_dict)
         single_fight = True if len(fight_dict) == 1 else False
         print_results(best_buffs, fight_list[0]['startTime'], code, fight_list[0]['id'], single_fight, intervals_reached)
-        run_again = input("Do you want to run the script again? (yes/no): ").strip().lower()
-        if run_again == 'no':
-            break
-        elif run_again == 'yes':
-            continue
-        else:
-            print("Invalid input. Please enter 'yes' or 'no'.")
 if __name__ == "__main__": main()
