@@ -62,6 +62,9 @@ def print_results(best_buffs, startTime, code, fightID, single_fight, intervals_
                 print("Fallback Target:")
             print(f"{i+1}. {best_buffs[interval][i]}")
         print("----------------------------------------")
+    points_resp = APIHandler.get_point_data(APIHandler.QUERY_POINTS)
+    points_dict = points_resp['data']['rateLimitData']
+    print(f"You have {points_dict['limitPerHour']-points_dict['pointsSpentThisHour']} points remaining. (Resets in {points_dict['pointsResetIn']//60}:{points_dict['pointsResetIn']%60:02d})")
 
 
 def generate_url(code, fightID, start_time, end_time):
