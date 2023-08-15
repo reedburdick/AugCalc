@@ -26,6 +26,17 @@ QUERY_VALID_CODE="""
         """
 
 
+QUERY_POINTS="""
+query{
+	rateLimitData{
+        limitPerHour
+        pointsSpentThisHour
+        pointsResetIn
+    }
+}
+"""
+
+
 def retrieve_headers():
     data = {"grant_type":"client_credentials"}
     auth = (os.environ.get("AUG_CLIENT_ID"), os.environ.get("AUG_CLIENT_SECRET"))
@@ -50,6 +61,13 @@ def get_table(query, **kwargs):
         return response.json()
     
 def check_code_valid(query, **kwargs):
+    data = {"query":query, "variables":kwargs}
+    with requests.Session() as session:
+        session.headers = retrieve_headers()
+        response = session.get(PUBLIC_URL, json = data)
+        return response.json()
+    
+def get_point_data(query, **kwargs):
     data = {"query":query, "variables":kwargs}
     with requests.Session() as session:
         session.headers = retrieve_headers()
